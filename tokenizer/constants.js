@@ -9,6 +9,8 @@ exports.specialChars = {
     closeParenthese: { regRule: /\)/g, value: '"' },
     openBracket: { regRule: /\{/g, value: '"' },
     closeBracket: { regRule: /\}/g, value: '"' },
+    openChevron : { regRule: /\</g, value: '"' },
+    closeChevron : { regRule: /\>/g, value: '"' },
 };
 
 exports.symboleEqual = "equal";
@@ -19,15 +21,21 @@ exports.symboleOpenParenthese = "openParenthese";
 exports.symboleCloseParenthese = "closeParenthese";
 exports.symboleOpenBracket = "openBracket";
 exports.symboleCloseBracket = "closeBracket";
+exports.symboleOpenChevron = "openChevron";
+exports.symboleCloseChevron = "closeChevron";
 
 exports.booleanValues = ["true", "false"];
 
 exports.typeBoolean = "boolean";
 exports.typeNumber = "number";
 exports.typeWord = "word";
-exports.typeStatement = "statement";
+exports.typeConditionalStatement = "conditionalStatement";
+exports.typeIteratorStatement = "iteratorStatement";
+exports.typeExpression = "expression";
 
-exports.statements = ["if", "else", "else if"];
+exports.conditionalStatements = ["if", "else", "else if"];
+
+exports.iteratorStatements = ["while","for"]
 
 exports.errorNoTokenFound = 'No Tokens Found.';
 

@@ -7,6 +7,7 @@ exports.expressionDeclaration = "variableDeclaration";
 exports.expressionAffectation = "variableAffectation";
 exports.expressionMethodCall = "objectMethodCall";
 exports.expressionConditionalStatement = "conditionalStatement";
+exports.expressionIteratorStatement = "iteratorStatement";
 
 exports.declarationVariable = ["int", "double", "float", "boolean", "String", "char"];
 

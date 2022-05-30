@@ -17,21 +17,17 @@ function parser(tokens) {
             //utilisation symbole égale
         } else if (tokens[i].type == constTokens.symboleEqual) {
             expression = create(constParser.expressionAffectation, tokens, i);
-            //si affectation nombre
-            if (expression.variableValue.type == constTokens.typeNumber) {
-                i++;
-            } else if (expression.variableValue.type == constTokens.typeBoolean) {
-                i++;
-                //si affectation string on reprend l'analyse après la fermeture des guillements.
-            } else {
-                i = expression.variableValue.end;
-            }
+            i = expression.end;
             //utilisation de methode
         } else if (i < tokens.length - 1 && tokens[i].type == constTokens.typeWord && tokens[i + 1].type == constTokens.symbolePoint) {
             expression = create(constParser.expressionMethodCall, tokens, i);
             i = expression.end;
-        } else if (tokens[i].type == constTokens.typeStatement) {
+        } else if (tokens[i].type == constTokens.typeConditionalStatement) {
             expression = create(constParser.expressionConditionalStatement, tokens, i);
+            i = expression.end;
+        }
+        else if (tokens[i].type == constTokens.typeIteratorStatement) {
+            expression = create(constParser.expressionIteratorStatement, tokens, i);
             i = expression.end;
         }
         if (expression) {
@@ -55,6 +51,8 @@ create = (type, tokens, start) => {
         case constParser.expressionAffectation:
             return variableAffectation(tokens, start);
         case constParser.expressionConditionalStatement:
+            return expressionConditionalStatement(tokens, start);
+        case constParser.expressionIteratorStatement:
             return expressionConditionalStatement(tokens, start);
     }
 }
@@ -93,6 +91,10 @@ function expressionConditionalStatement(tokens, start) {
     }
     const body = parser(tokensBodyIf);
 
+    if(tokens[start].type == constTokens.typeIteratorStatement){
+        return { type: constParser.expressionIteratorStatement, header: header, body: body, end: start + i };
+    }
+
     return { type: constParser.expressionConditionalStatement, header: header, body: body, end: start + i };
 }
 
@@ -115,19 +117,36 @@ function variableAffectation(tokens, start) {
     let variableName = tokens[start - 1].value;
     let variableValue = null;
     let variableType;
-    if (tokens[start + 1].type == constTokens.typeNumber) {
+    let end = start +1;
+    if (tokens[start + 2].type == constTokens.symboleOpenChevron || tokens[start+2].type == constTokens.symboleCloseChevron){
+        if(tokens[start +1].type != tokens[start +3].type && tokens[start+1].type != constTokens.typeNumber){
+            throw constParser.errorBadType;
+        }
+        let comp;
+        if(tokens[start + 2].type == constTokens.symboleOpenChevron){
+            comp = ''+(tokens[start+1].value < tokens[start+3].value);
+        }else{
+            comp = ''+(tokens[start+1].value > tokens[start+3].value);
+        }
+        tokens[start+1].value = comp;
+        variableValue = tokens[start+1];
+        end = start +3;
+        variableValue.type = constTokens.typeBoolean;
+    }
+    else if (tokens[start + 1].type == constTokens.typeNumber) {
         variableValue = tokens[start + 1];
         variableType = constTokens.typeNumber;
     } else if (tokens[start + 1].type == constTokens.symboleQuotationMark) {
         variableValue = helper.searchString(tokens, start + 1);
+        end = variableValue.end;
     } else if (tokens[start + 1].type == constTokens.symboleQuotationMark) {
         variableValue = tokens[start + 1];
     } else if (tokens[start + 1].type == constTokens.typeBoolean) {
         variableValue = tokens[start + 1];
         variableType = constTokens.typeBoolean;
-    }
+    } 
     variables.push({ variableName: variableName, variableValue: variableValue.value, variableType: variableType });
-    return { type: constParser.expressionAffectation, variableName: variableName, variableValue: variableValue };
+    return { type: constParser.expressionAffectation, variableName: variableName, variableValue: variableValue,end :end };
 }
 
 function getVariableByName(name) {
