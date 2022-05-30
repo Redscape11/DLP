@@ -8,11 +8,9 @@ module.exports = function (code) {
     var tokens = []
     for (var i = 0; i < _tokens.length; i++) {
         var t = _tokens[i]
-        if (i < 3) console.log(t);
     
         //si le token n'est pas un nombre
-
-        console.log(constTokens.symboleEqual)
+        console.log(_tokens[i])
         if (t.length <= 0 || isNaN(t)) {
             //on check si c'est un caractère spéciale
             let typeChars = helper.checkChars(t);
@@ -25,8 +23,13 @@ module.exports = function (code) {
                 tokens.push({ type: constTokens.typeBoolean, value: t });
             } else if (constTokens.iteratorStatements.indexOf(t) != -1) {
                 tokens.push({ type: constTokens.typeIteratorStatement, value: t })
-            } else if(i!=0 &&_tokens[i-1].substring(1,_tokens.length[i-1]-1)==constTokens.symboleEqual){
-                tokens.push({ type: constTokens.typeExpression, value: t })
+            } else if (i!=0 && _tokens[i-1].substring(1, _tokens[i-1].length-1)==constTokens.symboleEqual){
+                let value="";
+                    while(_tokens[i].substring(1, _tokens[i].length-1) != "endInstruct"){
+                        value += _tokens[i];
+                        i++;
+                    }
+                tokens.push({ type: constTokens.typeExpression, value: value })
                 }
             else {
                 tokens.push({ type: constTokens.typeWord, value: t })
