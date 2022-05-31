@@ -2,6 +2,8 @@
 exports.typeVariable = 'variable';
 exports.typeString = 'string';
 exports.typeBoolean = 'boolean';
+exports.typeExpression ='expression';
+exports.typeOperator = 'operator'
 
 exports.expressionDeclaration = "variableDeclaration";
 exports.expressionAffectation = "variableAffectation";
@@ -10,6 +12,7 @@ exports.expressionConditionalStatement = "conditionalStatement";
 exports.expressionIteratorStatement = "iteratorStatement";
 
 exports.declarationVariable = ["int", "double", "float", "boolean", "String", "char"];
+exports.operatorCharacter = ["+","-","*","/"]
 
 
 

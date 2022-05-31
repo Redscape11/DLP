@@ -1,5 +1,6 @@
 const constTokens = require("../tokenizer/constants");
 const constParser = require("./constants");
+const tokenizer = require("../tokenizer/tokenizer");
 // const factory = require("./expressionsFactory");
 
 module.exports = parser;
@@ -144,6 +145,16 @@ function variableAffectation(tokens, start) {
     } else if (tokens[start + 1].type == constTokens.typeBoolean) {
         variableValue = tokens[start + 1];
         variableType = constTokens.typeBoolean;
+    } else if (tokens[start + 1].type == constTokens.typeExpression) {
+        /*let tempToken = tokens[start+1].value;
+        let tempTokenSplit = tempToken.split("");
+        variableValue = [];
+        for (let i = 0; i <  tempTokenSplit.length; i++){
+            let currentToken = tokenizer(tempTokenSplit[i]);
+            variableValue.push(parser(currentToken));
+        }*/
+        variableValue = tokens[start + 1];
+        variableType = constTokens.typeExpression;
     } 
     variables.push({ variableName: variableName, variableValue: variableValue.value, variableType: variableType });
     return { type: constParser.expressionAffectation, variableName: variableName, variableValue: variableValue,end :end };
