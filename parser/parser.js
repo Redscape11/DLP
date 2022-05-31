@@ -53,9 +53,85 @@ create = (type, tokens, start) => {
         case constParser.expressionConditionalStatement:
             return expressionConditionalStatement(tokens, start);
         case constParser.expressionIteratorStatement:
-            return expressionConditionalStatement(tokens, start);
+            return expressionIteratorStatement(tokens, start);
     }
 }
+
+function expressionIteratorStatement(tokens, start) {
+    if(tokens[start].value == "while"){
+        return expressionConditionalStatement(tokens,start);
+    }
+    // for (int i = 0; i < 10; i=i+1) {
+    if (tokens[start+1].type !== constTokens.symboleOpenParenthese)
+        throw constParser.errorMissingOpenParenthesis;
+    
+    let forInit = [];
+    let i = start + 2;
+    while (tokens[i].type !== constTokens.symboleEndInstruct && i < tokens.length) {
+        forInit.push(tokens[i]);
+        i++;
+    }
+    if ( i < tokens.length && tokens[i].type !== constTokens.symboleEndInstruct) 
+        throw constParser.errorMissingEndInstruct;
+    forInit.push(tokens[i]);
+    const init = parser(forInit);
+    
+    if (init[1].variableValue.type !== constTokens.typeNumber)
+        throw constParser.errorBadType;
+
+    i++;
+    let forCondition = [];
+    while (tokens[i].type !== constTokens.symboleEndInstruct && i < tokens.length) {
+        forCondition.push(tokens[i]);
+        i++;
+    }
+    if ( i < tokens.length && tokens[i].type !== constTokens.symboleEndInstruct) 
+         throw constParser.errorMissingEndInstruct;
+    forCondition.push(tokens[i]);
+    i++;
+    const condition = forCondition;
+
+    let forStep = [];
+    while (tokens[i].type !== constTokens.symboleCloseParenthese && i < tokens.length) {
+        forStep.push(tokens[i]);
+        i++;
+    }
+    const step = parser(forStep);
+    /*
+    forCondition.unshift({ type: 'word', value: '__b' });
+    forCondition.unshift({ type: 'equal' });
+    forCondition.unshift({ type: 'number', value: forCondition[forCondition.length-2].value });
+    forCondition.unshift({ type: 'endInstruct' });
+    forCondition.unshift({ type: 'word', value: '__b' });
+    forCondition.unshift({ type: 'word', value: 'int' });
+    forCondition.splice(forCondition.length-2, 1);
+    */
+
+   
+    let iteratorBody = [];
+    if ( i < tokens.length && tokens[i].type !== constTokens.symboleCloseParenthese) 
+         throw constParser.errorMissingCloseParenthesis;
+
+    i++;
+    if ( i < tokens.length && tokens[i].type !== constTokens.symboleOpenBracket) 
+         throw constParser.errorMissingOpenBracket;
+    
+    i++;
+    while(tokens[i].type !== constTokens.symboleCloseBracket && i< tokens.length){
+            iteratorBody.push(tokens[i]);
+            i++;
+    }
+    
+    
+    if ( i < tokens.length && tokens[i].type !== constTokens.symboleCloseBracket) 
+    throw constParser.errorMissingCloseBracket;
+    const body = parser(iteratorBody);
+
+    return { type: constParser.expressionIteratorStatement, initialisation: init, condition: condition, step : step,body:body,end: i };
+
+    //const head = { init, condition, increment };
+}
+
 
 function expressionConditionalStatement(tokens, start) {
     // check des parentheses -> head sinon error
@@ -83,19 +159,29 @@ function expressionConditionalStatement(tokens, start) {
     if (tokens[start + 4].type !== constTokens.symboleOpenBracket)
         throw constParser.errorBadType;
 
-    const tokensBodyIf = []; let i;
-    for (i = start + 5; i < tokens.length; ++i) {
-        if (tokens[i].type !== constTokens.symboleCloseBracket) {
-            tokensBodyIf.push(tokens[i]);
+    const tokensBodyIf = []; 
+    let i = start +5;
+    let countBracketOpen=1;
+    while(countBracketOpen!=0 && i < tokens.length){
+        if (tokens[i].type == constTokens.symboleOpenBracket) {
+            countBracketOpen++;
         }
+        if (tokens[i].type == constTokens.symboleCloseBracket) {
+            countBracketOpen--;
+        }
+        console.log("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<",countBracketOpen)
+        tokensBodyIf.push(tokens[i]);
+        i++;
     }
+    tokensBodyIf.pop();
+    console.log("bodyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",tokensBodyIf)
     const body = parser(tokensBodyIf);
 
     if(tokens[start].type == constTokens.typeIteratorStatement){
-        return { type: constParser.expressionIteratorStatement, header: header, body: body, end: start + i };
+        return { type: constParser.expressionIteratorStatement, header: header, body: body, end: i };
     }
 
-    return { type: constParser.expressionConditionalStatement, header: header, body: body, end: start + i };
+    return { type: constParser.expressionConditionalStatement, header: header, body: body, end: i };
 }
 
 function objectMethodCall(tokens, start) {
@@ -118,7 +204,7 @@ function variableAffectation(tokens, start) {
     let variableValue = null;
     let variableType;
     let end = start +1;
-    if (tokens[start + 2].type == constTokens.symboleOpenChevron || tokens[start+2].type == constTokens.symboleCloseChevron){
+    if (tokens.length > 5 && (tokens[start + 2].type == constTokens.symboleOpenChevron || tokens[start+2].type == constTokens.symboleCloseChevron)){
         if(tokens[start +1].type != tokens[start +3].type && tokens[start+1].type != constTokens.typeNumber){
             throw constParser.errorBadType;
         }
@@ -144,7 +230,11 @@ function variableAffectation(tokens, start) {
     } else if (tokens[start + 1].type == constTokens.typeBoolean) {
         variableValue = tokens[start + 1];
         variableType = constTokens.typeBoolean;
-    } 
+    } else if (tokens[start+1].type == constTokens.typeExpression)
+    {
+        variableValue = tokens[start + 1];
+        variableType = constTokens.typeExpression;
+    }
     variables.push({ variableName: variableName, variableValue: variableValue.value, variableType: variableType });
     return { type: constParser.expressionAffectation, variableName: variableName, variableValue: variableValue,end :end };
 }

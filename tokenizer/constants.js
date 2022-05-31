@@ -16,6 +16,7 @@ exports.specialChars = {
 exports.symboleEqual = "equal";
 exports.symbolePoint = "point";
 exports.symboleVirgule = "virgule";
+exports.symboleEndInstruct = "endInstruct";
 exports.symboleQuotationMark = "quotationMark";
 exports.symboleOpenParenthese = "openParenthese";
 exports.symboleCloseParenthese = "closeParenthese";
